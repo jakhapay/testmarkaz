@@ -1,0 +1,57 @@
+# ── Android ──────────────────────────────────────────────────────────────
+*.iml
+.gradle/
+local.properties
+.idea/
+.DS_Store
+build/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+**/google-services.json
+
+# Android local.properties (contains SDK path)
+android/local.properties
+
+# Keystore files — NEVER commit these
+*.jks
+*.keystore
+
+# Generated files
+android/app/src/main/assets/databases/
+
+# ── Kotlin / Java ─────────────────────────────────────────────────────────
+*.class
+out/
+
+# ── Gradle wrapper verification ──────────────────────────────────────────
+!android/gradle/wrapper/gradle-wrapper.jar
+!android/gradlew
+!android/gradlew.bat
+
+# ── macOS ─────────────────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+
+# ── Node / tooling ────────────────────────────────────────────────────────
+node_modules/
+.env
+.env.local
+
+# ── Editor ────────────────────────────────────────────────────────────────
+.vscode/
+*.swp
+*.swo
+
+# ── Large binary docs (optional — remove if you want them tracked) ────────
+# *.docx
+# *.pptx
+# *.xlsx
