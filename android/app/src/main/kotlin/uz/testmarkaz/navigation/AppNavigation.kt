@@ -1,4 +1,4 @@
-package uz.testmarkaz.ui.navigation
+package uz.testmarkaz.navigation
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
