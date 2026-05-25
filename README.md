@@ -1,31 +1,31 @@
 # TestMarkaz 📚
 
-**O'zbekiston maktab o'quvchilari va DTM abituriyentlari uchun oflayn test platformasi**
+**An offline test platform for Uzbekistan school students and university entrance exam (DTM) applicants**
 
 ---
 
-## Loyiha haqida
+## About the Project
 
-TestMarkaz — internet ulanishisiz ishlaydi. Savollar qurilmaga yuklab olinadi va to'liq oflayn rejimda ishlaydi. Har bir test aniq **25 ta savol**dan iborat.
+TestMarkaz works without an internet connection. Questions are downloaded to the device and the app runs fully offline. Each test consists of exactly **25 questions**.
 
-## Asosiy xususiyatlar
+## Key Features
 
-- 📶 **Oflayn-first** — internet yo'q bo'lsa ham to'liq ishlaydi
-- 📝 **25 ta savol** — har doim aniq shu miqdor
-- 🎯 **4 xil test rejimi** — fan, sinf diapazoni, tasodifiy sinf, to'liq tasodifiy
-- 🏫 **16 ta fan** — barcha maktab fanlari (1–11 sinf)
-- 🏆 **DTM tayyorgarlik** — 9–11 sinf paketlari
-- 📊 **Progress kuzatuvi** — XP, streak, zaif mavzular
+- 📶 **Offline-first** — works fully without internet
+- 📝 **25 questions** — always exactly this number per test
+- 🎯 **4 test modes** — by subject, grade range, random grade, fully random
+- 🏫 **16 subjects** — all school subjects (grades 1–11)
+- 🏆 **DTM preparation** — grade 9–11 packages
+- 📊 **Progress tracking** — XP, streaks, weak topic detection
 
-## Texnologiyalar
+## Tech Stack
 
 - **Kotlin** + Jetpack Compose + Material 3
-- **Room 2.6.1** (oflayn SQLite)
+- **Room 2.6.1** (offline SQLite)
 - **Hilt** (dependency injection)
 - **Navigation Compose**
 - **Coroutines + Flow**
 
-## Tuzilma
+## Project Structure
 
 ```
 TestMarkaz/
@@ -38,24 +38,24 @@ TestMarkaz/
 └── docs/             # Architecture, API, UI/UX, roadmap docs
 ```
 
-## Ishga tushurish
+## Getting Started
 
-1. Android Studio-da `android/` papkasini oching
-2. `./gradlew assembleDebug` yoki IDE dan Run tugmasini bosing
-3. Ilova ishga tushganda **150+ mock savol** avtomatik yuklanadi
+1. Open the `android/` folder in Android Studio
+2. Run `./gradlew assembleDebug` or press the Run button in the IDE
+3. On first launch, **150+ mock questions** are seeded automatically
 
-## Mock ma'lumotlar
+## Mock Data
 
-Hozircha `MockDataSeeder.kt` orqali 150+ o'zbek tilli savol seed qilinadi:
-- Matematika (9, 10, 11-sinf)
-- Fizika, Kimyo, Biologiya (9-sinf)
-- Ingliz tili, O'zbek tili, Tarix, Geografiya (9-sinf)
+Currently, 150+ Uzbek-language questions are seeded via `MockDataSeeder.kt`:
+- Mathematics (grades 9, 10, 11)
+- Physics, Chemistry, Biology (grade 9)
+- English, Uzbek Language, History, Geography (grade 9)
 
-Kitoblar kelgach, `MockDataSeeder.kt` haqiqiy savollar bilan almashtiriladi.
+Once real question books are available, `MockDataSeeder.kt` will be replaced with actual content.
 
-## Hujjatlar
+## Documentation
 
-`docs/` papkasida barcha arxitektura, API, UI/UX va yo'l xaritalari mavjud.
+All architecture, API, UI/UX, and roadmap docs are available in the `docs/` folder.
 
 ---
 
