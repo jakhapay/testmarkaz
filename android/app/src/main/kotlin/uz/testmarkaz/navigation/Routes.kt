@@ -1,4 +1,4 @@
-package uz.testmarkaz.ui.navigation
+package uz.testmarkaz.navigation
 
 object Routes {
     const val HOME         = "home"
