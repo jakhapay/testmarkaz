@@ -20,6 +20,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import uz.testmarkaz.data.db.entity.PausedSessionEntity
 import uz.testmarkaz.data.db.entity.TestSessionEntity
 import uz.testmarkaz.ui.theme.*
 import java.text.SimpleDateFormat
@@ -29,7 +30,7 @@ import java.util.*
 @Composable
 fun HomeScreen(
     onStartTest: () -> Unit,
-    onResume: () -> Unit,
+    onResume: (sessionId: String) -> Unit,
     onOpenDownloads: () -> Unit,
     onOpenProgress: () -> Unit,
     onOpenProfile: () -> Unit,
@@ -69,9 +70,11 @@ fun HomeScreen(
                 StatsRow(state = state)
             }
 
-            // ── Resume banner (shown when there is a paused session) ───
-            if (state.hasPausedSession) {
-                item { ResumeBanner(onResume = onResume) }
+            // ── Resume banners (one per paused session) ───────────────
+            if (state.pausedSessions.isNotEmpty()) {
+                items(state.pausedSessions) { paused ->
+                    ResumeBanner(paused = paused, onResume = { onResume(paused.sessionId) })
+                }
             }
 
             // ── Start test button ──────────────────────────────────────
@@ -311,7 +314,11 @@ private fun EmptyStateCard() {
 }
 
 @Composable
-private fun ResumeBanner(onResume: () -> Unit) {
+private fun ResumeBanner(paused: PausedSessionEntity, onResume: () -> Unit) {
+    val subjectLabel = paused.subjectCode
+        ?.replaceFirstChar { it.uppercase() } ?: "Aralash"
+    val progress = "${paused.currentIndex + 1}-savol"
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape    = RoundedCornerShape(16.dp),
@@ -327,12 +334,12 @@ private fun ResumeBanner(onResume: () -> Unit) {
             Text("⏸️", style = MaterialTheme.typography.titleLarge)
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "Yakunlanmagan test bor",
+                    subjectLabel,
                     style      = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    "Qolgan savollarni davom ettiring",
+                    progress,
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
                 )

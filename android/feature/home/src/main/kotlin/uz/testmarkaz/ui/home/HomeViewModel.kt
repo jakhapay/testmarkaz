@@ -6,19 +6,20 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import uz.testmarkaz.data.db.dao.PausedSessionDao
 import uz.testmarkaz.data.db.dao.ProgressDao
 import uz.testmarkaz.data.db.dao.QuestionDao
 import uz.testmarkaz.data.db.dao.TestSessionDao
+import uz.testmarkaz.data.db.entity.PausedSessionEntity
 import uz.testmarkaz.data.db.entity.TestSessionEntity
 import uz.testmarkaz.data.db.entity.UserStatsEntity
-import uz.testmarkaz.data.db.dao.PausedSessionDao
 import javax.inject.Inject
 
 data class HomeUiState(
     val totalQuestions: Int = 0,
     val stats: UserStatsEntity? = null,
     val recentSessions: List<TestSessionEntity> = emptyList(),
-    val hasPausedSession: Boolean = false,
+    val pausedSessions: List<PausedSessionEntity> = emptyList(),
     val isLoading: Boolean = true
 )
 
@@ -33,18 +34,18 @@ class HomeViewModel @Inject constructor(
     val uiState = combine(
         progressDao.observeStats(),
         testSessionDao.observeRecentSessions(),
-        pausedSessionDao.observeHasPaused()
-    ) { stats, sessions, hasPaused ->
+        pausedSessionDao.observeAll()
+    ) { stats, sessions, paused ->
         HomeUiState(
-            totalQuestions   = questionDao.countAll(),
-            stats            = stats,
-            recentSessions   = sessions,
-            hasPausedSession = hasPaused,
-            isLoading        = false
+            totalQuestions = questionDao.countAll(),
+            stats          = stats,
+            recentSessions = sessions,
+            pausedSessions = paused,
+            isLoading      = false
         )
     }.stateIn(
-        scope          = viewModelScope,
-        started        = SharingStarted.WhileSubscribed(5_000),
-        initialValue   = HomeUiState()
+        scope        = viewModelScope,
+        started      = SharingStarted.WhileSubscribed(5_000),
+        initialValue = HomeUiState()
     )
 }

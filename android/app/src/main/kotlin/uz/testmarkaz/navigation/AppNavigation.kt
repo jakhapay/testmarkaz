@@ -31,9 +31,9 @@ fun AppNavigation(
         composable(Routes.HOME) {
             HomeScreen(
                 onStartTest     = { navController.navigate(Routes.TEST_CONFIG) },
-                onResume        = {
+                onResume        = { sessionId ->
                     scope.launch {
-                        val restored = pausedSessionRepository.restore() ?: return@launch
+                        val restored = pausedSessionRepository.restoreById(sessionId) ?: return@launch
                         SessionHolder.put(restored.session)
                         navController.navigate(Routes.testSession(restored.session.sessionId))
                     }
