@@ -21,7 +21,8 @@ data class DownloadsUiState(
     val catalog: List<ContentPackInfo> = emptyList(),
     val installedPacks: List<InstalledPackEntity> = emptyList(),
     val downloading: Set<String> = emptySet(),
-    val errors: Map<String, String> = emptyMap()
+    val errors: Map<String, String> = emptyMap(),
+    val isLoading: Boolean = true
 )
 
 @HiltViewModel
@@ -34,14 +35,16 @@ class DownloadsViewModel @Inject constructor(
     private val _catalog = MutableStateFlow<List<ContentPackInfo>>(emptyList())
     private val _downloading = MutableStateFlow<Set<String>>(emptySet())
     private val _errors = MutableStateFlow<Map<String, String>>(emptyMap())
+    private val _isLoading = MutableStateFlow(true)
 
     val uiState = combine(
         _catalog,
         progressDao.observeInstalledPacks(),
         _downloading,
-        _errors
-    ) { catalog, installed, downloading, errors ->
-        DownloadsUiState(catalog, installed, downloading, errors)
+        _errors,
+        _isLoading
+    ) { catalog, installed, downloading, errors, isLoading ->
+        DownloadsUiState(catalog, installed, downloading, errors, isLoading)
     }.stateIn(
         scope = viewModelScope,
         started = SharingStarted.WhileSubscribed(5_000),
@@ -50,7 +53,8 @@ class DownloadsViewModel @Inject constructor(
 
     init {
         viewModelScope.launch(Dispatchers.IO) {
-            _catalog.value = catalogRepository.loadAll().filter { it.isPublished }
+            _catalog.value = catalogRepository.loadAll()
+            _isLoading.value = false
         }
     }
 

@@ -107,7 +107,7 @@ fun DownloadsScreen(
                 }
             }
 
-            if (state.catalog.isEmpty()) {
+            if (state.isLoading) {
                 item {
                     Box(
                         modifier = Modifier.fillParentMaxWidth().padding(top = 48.dp),
