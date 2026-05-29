@@ -7,10 +7,12 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import okhttp3.OkHttpClient
 import uz.testmarkaz.data.db.AppDatabase
 import uz.testmarkaz.data.db.dao.ProgressDao
 import uz.testmarkaz.data.db.dao.QuestionDao
 import uz.testmarkaz.data.db.dao.TestSessionDao
+import java.util.concurrent.TimeUnit
 import javax.inject.Singleton
 
 @Module
@@ -36,4 +38,11 @@ object AppModule {
 
     @Provides
     fun provideProgressDao(db: AppDatabase): ProgressDao = db.progressDao()
+
+    @Provides
+    @Singleton
+    fun provideOkHttpClient(): OkHttpClient = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .readTimeout(120, TimeUnit.SECONDS)
+        .build()
 }

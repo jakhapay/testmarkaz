@@ -8,6 +8,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.ErrorOutline
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -15,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import uz.testmarkaz.data.catalog.ContentPackInfo
 import uz.testmarkaz.data.db.entity.InstalledPackEntity
 import uz.testmarkaz.domain.model.Subject
 import uz.testmarkaz.ui.theme.Secondary
@@ -26,6 +28,9 @@ fun DownloadsScreen(
     viewModel: DownloadsViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
+    val installedKeys = state.installedPacks.map { it.packKey }.toSet()
+    val installed = state.catalog.filter { it.packKey in installedKeys }
+    val available = state.catalog.filter { it.packKey !in installedKeys }
 
     Scaffold(
         topBar = {
@@ -56,7 +61,7 @@ fun DownloadsScreen(
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            "📦 Paketlar haqida",
+                            "Paketlar haqida",
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.SemiBold
                         )
@@ -70,8 +75,7 @@ fun DownloadsScreen(
                 }
             }
 
-            // ── Mock installed packs ───────────────────────────────────
-            if (state.installedPacks.isNotEmpty()) {
+            if (installed.isNotEmpty()) {
                 item {
                     Text(
                         "Yuklangan paketlar",
@@ -79,39 +83,46 @@ fun DownloadsScreen(
                         fontWeight = FontWeight.SemiBold
                     )
                 }
-                items(state.installedPacks) { pack ->
+                items(installed, key = { it.packKey }) { pack ->
                     InstalledPackCard(pack = pack)
                 }
             }
 
-            // ── Available packs (mock) ─────────────────────────────────
-            item {
-                Text(
-                    "Mavjud paketlar",
-                    style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.padding(top = 8.dp)
-                )
+            if (available.isNotEmpty()) {
+                item {
+                    Text(
+                        "Mavjud paketlar",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(top = if (installed.isNotEmpty()) 8.dp else 0.dp)
+                    )
+                }
+                items(available, key = { it.packKey }) { pack ->
+                    AvailablePackCard(
+                        pack = pack,
+                        isDownloading = pack.packKey in state.downloading,
+                        error = state.errors[pack.packKey],
+                        onDownload = { viewModel.download(pack) }
+                    )
+                }
             }
 
-            val installedKeys = state.installedPacks.map { it.packKey }.toSet()
-            val available = Subject.dtmSubjects.flatMap { subject ->
-                (9..11).map { grade -> subject to grade }
-            }.filter { (s, g) -> "${s.code}_$g" !in installedKeys }
-
-            items(available) { (subject, grade) ->
-                AvailablePackCard(
-                    subject = subject,
-                    grade = grade,
-                    onDownload = { /* TODO: implement download */ }
-                )
+            if (state.catalog.isEmpty()) {
+                item {
+                    Box(
+                        modifier = Modifier.fillParentMaxWidth().padding(top = 48.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-private fun InstalledPackCard(pack: InstalledPackEntity) {
+private fun InstalledPackCard(pack: ContentPackInfo) {
     val subject = Subject.fromCode(pack.subjectCode)
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -127,14 +138,12 @@ private fun InstalledPackCard(pack: InstalledPackEntity) {
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "${subject?.emoji ?: "📦"}  ${subject?.displayName ?: pack.subjectCode}",
+                    "${subject?.emoji ?: "📦"}  ${pack.nameUz}",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold
                 )
-                val gradeLabel = pack.grade?.let { "${it}-sinf" }
-                    ?: "${pack.gradeMin}-${pack.gradeMax}-sinf"
                 Text(
-                    "$gradeLabel • ${pack.questionCount} savol",
+                    "${pack.questionCount} savol",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                 )
@@ -146,10 +155,12 @@ private fun InstalledPackCard(pack: InstalledPackEntity) {
 
 @Composable
 private fun AvailablePackCard(
-    subject: Subject,
-    grade: Int,
+    pack: ContentPackInfo,
+    isDownloading: Boolean,
+    error: String?,
     onDownload: () -> Unit
 ) {
+    val subject = Subject.fromCode(pack.subjectCode)
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(14.dp)
@@ -161,22 +172,41 @@ private fun AvailablePackCard(
         ) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    "${subject.emoji}  ${subject.displayName}",
+                    "${subject?.emoji ?: "📦"}  ${pack.nameUz}",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold
                 )
                 Text(
-                    "$grade-sinf",
+                    "${pack.questionCount} savol",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.5f)
                 )
+                if (error != null) {
+                    Text(
+                        error,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error
+                    )
+                }
             }
-            IconButton(onClick = onDownload) {
-                Icon(
-                    Icons.Default.Download,
-                    contentDescription = "Yuklab olish",
-                    tint = MaterialTheme.colorScheme.primary
-                )
+            if (isDownloading) {
+                CircularProgressIndicator(modifier = Modifier.size(24.dp), strokeWidth = 2.dp)
+            } else if (error != null) {
+                IconButton(onClick = onDownload) {
+                    Icon(
+                        Icons.Default.ErrorOutline,
+                        contentDescription = "Qayta urinish",
+                        tint = MaterialTheme.colorScheme.error
+                    )
+                }
+            } else {
+                IconButton(onClick = onDownload) {
+                    Icon(
+                        Icons.Default.Download,
+                        contentDescription = "Yuklab olish",
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
             }
         }
     }
