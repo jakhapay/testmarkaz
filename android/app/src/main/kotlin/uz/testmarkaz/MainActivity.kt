@@ -5,7 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import dagger.hilt.android.AndroidEntryPoint
-import uz.testmarkaz.ui.navigation.AppNavigation
+import uz.testmarkaz.navigation.AppNavigation
 import uz.testmarkaz.ui.theme.TestMarkazTheme
 
 @AndroidEntryPoint
