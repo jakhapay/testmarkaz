@@ -1,5 +1,6 @@
 package uz.testmarkaz.ui.testsession
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -9,6 +10,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -23,11 +26,43 @@ import uz.testmarkaz.ui.theme.Secondary
 fun TestSessionScreen(
     sessionId: String,
     onComplete: (String) -> Unit,
+    onBack: () -> Unit,
     viewModel: TestSessionViewModel = hiltViewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val session = state.session ?: return
+    var showExitDialog by remember { mutableStateOf(false) }
 
+    // Intercept hardware / gesture back
+    BackHandler { showExitDialog = true }
+
+    if (showExitDialog) {
+        AlertDialog(
+            onDismissRequest = { showExitDialog = false },
+            icon = { Text("⏸️", style = MaterialTheme.typography.headlineMedium) },
+            title = { Text("Testni to'xtatish") },
+            text = {
+                val answered = state.currentIndex
+                val total    = state.session?.totalQuestions ?: 0
+                Text(
+                    "$answered / $total savol bajarildi.\n\n" +
+                    "Natija saqlanadi — istagan vaqt davom ettirishingiz mumkin."
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    showExitDialog = false
+                    viewModel.pauseAndExit(onBack)
+                }) { Text("Saqlab chiqish") }
+            },
+            dismissButton = {
+                TextButton(onClick = { showExitDialog = false }) {
+                    Text("Davom ettirish")
+                }
+            }
+        )
+    }
+
+    val session = state.session ?: return
     val question = session.questions.getOrNull(state.currentIndex) ?: return
     val progress = (state.currentIndex + 1).toFloat() / session.totalQuestions
 
@@ -36,35 +71,37 @@ fun TestSessionScreen(
             .fillMaxSize()
             .statusBarsPadding()
     ) {
-
-        // ── Progress bar ──────────────────────────────────────────────
-        Column(modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = "${state.currentIndex + 1} / ${session.totalQuestions}",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
-                )
-                Text(
-                    text = "Savol ${state.currentIndex + 1}",
-                    style = MaterialTheme.typography.labelLarge,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.SemiBold
+        // ── Top bar ───────────────────────────────────────────────────
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 4.dp, end = 16.dp, top = 4.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            IconButton(onClick = { showExitDialog = true }) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Orqaga"
                 )
             }
-            Spacer(Modifier.height(6.dp))
-            LinearProgressIndicator(
-                progress = { progress },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(6.dp),
-                color = MaterialTheme.colorScheme.primary,
-                trackColor = MaterialTheme.colorScheme.primaryContainer
+            Spacer(Modifier.weight(1f))
+            Text(
+                text = "${state.currentIndex + 1} / ${session.totalQuestions}",
+                style = MaterialTheme.typography.labelLarge,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
         }
+
+        // ── Progress bar ──────────────────────────────────────────────
+        LinearProgressIndicator(
+            progress = { progress },
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp)
+                .height(6.dp),
+            color = MaterialTheme.colorScheme.primary,
+            trackColor = MaterialTheme.colorScheme.primaryContainer
+        )
 
         AnimatedContent(
             targetState = state.currentIndex,
@@ -78,16 +115,10 @@ fun TestSessionScreen(
                     .padding(16.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-
                 // ── Topic chip ─────────────────────────────────────────
                 SuggestionChip(
                     onClick = {},
-                    label = {
-                        Text(
-                            text = question.topic,
-                            style = MaterialTheme.typography.labelSmall
-                        )
-                    }
+                    label = { Text(question.topic, style = MaterialTheme.typography.labelSmall) }
                 )
 
                 // ── Question text ──────────────────────────────────────
@@ -109,12 +140,12 @@ fun TestSessionScreen(
                 // ── Options ───────────────────────────────────────────
                 question.options.forEach { (key, text) ->
                     OptionButton(
-                        optionKey = key,
+                        optionKey  = key,
                         optionText = text,
-                        selected = state.selectedOption == key,
-                        revealed = state.isAnswerRevealed,
+                        selected   = state.selectedOption == key,
+                        revealed   = state.isAnswerRevealed,
                         correctKey = question.correct,
-                        onClick = { viewModel.selectOption(key) }
+                        onClick    = { viewModel.selectOption(key) }
                     )
                 }
 
@@ -122,22 +153,17 @@ fun TestSessionScreen(
                 if (state.isAnswerRevealed && question.explanation.isNotBlank()) {
                     Card(
                         shape = RoundedCornerShape(12.dp),
-                        colors = CardDefaults.cardColors(
-                            containerColor = Secondary.copy(alpha = 0.1f)
-                        )
+                        colors = CardDefaults.cardColors(containerColor = Secondary.copy(alpha = 0.1f))
                     ) {
                         Column(modifier = Modifier.padding(16.dp)) {
                             Text(
-                                text = "📘 Izoh",
+                                "📘 Izoh",
                                 style = MaterialTheme.typography.labelLarge,
                                 color = Secondary,
                                 fontWeight = FontWeight.Bold
                             )
                             Spacer(Modifier.height(4.dp))
-                            Text(
-                                text = question.explanation,
-                                style = MaterialTheme.typography.bodyMedium
-                            )
+                            Text(question.explanation, style = MaterialTheme.typography.bodyMedium)
                         }
                     }
                 }
@@ -147,19 +173,17 @@ fun TestSessionScreen(
                 // ── Action button ─────────────────────────────────────
                 if (!state.isAnswerRevealed) {
                     Button(
-                        onClick = { viewModel.confirmAnswer() },
-                        enabled = state.selectedOption != null,
+                        onClick  = { viewModel.confirmAnswer() },
+                        enabled  = state.selectedOption != null,
                         modifier = Modifier.fillMaxWidth().height(52.dp),
-                        shape = RoundedCornerShape(14.dp)
-                    ) {
-                        Text("Tekshirish", fontWeight = FontWeight.SemiBold)
-                    }
+                        shape    = RoundedCornerShape(14.dp)
+                    ) { Text("Tekshirish", fontWeight = FontWeight.SemiBold) }
                 } else {
                     val isLast = state.currentIndex == session.totalQuestions - 1
                     Button(
-                        onClick = { viewModel.nextQuestion(onComplete) },
+                        onClick  = { viewModel.nextQuestion(onComplete) },
                         modifier = Modifier.fillMaxWidth().height(52.dp),
-                        shape = RoundedCornerShape(14.dp)
+                        shape    = RoundedCornerShape(14.dp)
                     ) {
                         Text(
                             if (isLast) "Natijalarni ko'rish →" else "Keyingi savol →",
@@ -196,39 +220,36 @@ private fun OptionButton(
         selected              -> MaterialTheme.colorScheme.primary
         else                  -> MaterialTheme.colorScheme.outline
     }
-    val borderWidth = if (selected || (revealed && isCorrect)) 2.dp else 1.dp
 
     OutlinedButton(
-        onClick = onClick,
-        enabled = !revealed,
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(14.dp),
-        colors = ButtonDefaults.outlinedButtonColors(containerColor = containerColor),
-        border = BorderStroke(borderWidth, borderColor),
-        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
+        onClick          = onClick,
+        enabled          = !revealed,
+        modifier         = Modifier.fillMaxWidth(),
+        shape            = RoundedCornerShape(14.dp),
+        colors           = ButtonDefaults.outlinedButtonColors(containerColor = containerColor),
+        border           = BorderStroke(if (selected || (revealed && isCorrect)) 2.dp else 1.dp, borderColor),
+        contentPadding   = PaddingValues(horizontal = 16.dp, vertical = 14.dp)
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier              = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment     = Alignment.CenterVertically
         ) {
             Text(
-                text = optionKey,
-                style = MaterialTheme.typography.labelLarge,
-                color = borderColor,
+                text     = optionKey,
+                style    = MaterialTheme.typography.labelLarge,
+                color    = borderColor,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .padding(4.dp)
-                    .width(20.dp)
+                modifier = Modifier.padding(4.dp).width(20.dp)
             )
             Text(
-                text = optionText,
-                style = MaterialTheme.typography.bodyMedium,
+                text     = optionText,
+                style    = MaterialTheme.typography.bodyMedium,
                 modifier = Modifier.weight(1f),
-                color = MaterialTheme.colorScheme.onSurface
+                color    = MaterialTheme.colorScheme.onSurface
             )
-            if (revealed && isCorrect) Text("✓", color = Secondary, fontWeight = FontWeight.Bold)
-            if (revealed && selected && !isCorrect) Text("✗", color = Error, fontWeight = FontWeight.Bold)
+            if (revealed && isCorrect)            Text("✓", color = Secondary, fontWeight = FontWeight.Bold)
+            if (revealed && selected && !isCorrect) Text("✗", color = Error,    fontWeight = FontWeight.Bold)
         }
     }
 }

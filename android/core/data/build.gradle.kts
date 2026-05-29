@@ -34,4 +34,7 @@ dependencies {
     // Hilt
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+
+    // Network (used by PackDownloadRepository)
+    implementation(libs.okhttp)
 }

@@ -12,6 +12,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -28,6 +29,7 @@ import java.util.*
 @Composable
 fun HomeScreen(
     onStartTest: () -> Unit,
+    onResume: () -> Unit,
     onOpenDownloads: () -> Unit,
     onOpenProgress: () -> Unit,
     onOpenProfile: () -> Unit,
@@ -65,6 +67,11 @@ fun HomeScreen(
             // ── Stats row ─────────────────────────────────────────────
             item {
                 StatsRow(state = state)
+            }
+
+            // ── Resume banner (shown when there is a paused session) ───
+            if (state.hasPausedSession) {
+                item { ResumeBanner(onResume = onResume) }
             }
 
             // ── Start test button ──────────────────────────────────────
@@ -299,6 +306,41 @@ private fun EmptyStateCard() {
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)
             )
+        }
+    }
+}
+
+@Composable
+private fun ResumeBanner(onResume: () -> Unit) {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape    = RoundedCornerShape(16.dp),
+        colors   = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.secondaryContainer
+        )
+    ) {
+        Row(
+            modifier              = Modifier.padding(16.dp),
+            verticalAlignment     = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            Text("⏸️", style = MaterialTheme.typography.titleLarge)
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    "Yakunlanmagan test bor",
+                    style      = MaterialTheme.typography.bodyMedium,
+                    fontWeight = FontWeight.SemiBold
+                )
+                Text(
+                    "Qolgan savollarni davom ettiring",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.7f)
+                )
+            }
+            Button(
+                onClick = onResume,
+                shape   = RoundedCornerShape(12.dp)
+            ) { Text("Davom") }
         }
     }
 }
