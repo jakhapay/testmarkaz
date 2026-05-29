@@ -30,27 +30,19 @@ class PackDownloadRepository @Inject constructor(
 ) {
 
     suspend fun download(pack: ContentPackInfo): DownloadResult = withContext(Dispatchers.IO) {
-        if (pack.driveFileId.isBlank()) return@withContext DownloadResult.Error("No download link available")
-
         val tmpFile = File(context.cacheDir, "${pack.packKey}.db")
         try {
-            // Google Drive direct download URL
-            val url = "https://drive.google.com/uc?export=download&id=${pack.driveFileId}"
-            val request = Request.Builder().url(url).build()
-            val response = okHttpClient.newCall(request).execute()
-            if (!response.isSuccessful) {
-                return@withContext DownloadResult.Error("Download failed: ${response.code}")
+            val ok = when {
+                pack.driveFileId.isNotBlank() -> downloadFromDrive(pack.driveFileId, tmpFile)
+                pack.driveFileName.isNotBlank() -> copyFromAssets(pack.driveFileName, tmpFile)
+                else -> return@withContext DownloadResult.Error("No download source available")
             }
-            response.body?.byteStream()?.use { input ->
-                tmpFile.outputStream().use { output -> input.copyTo(output) }
-            } ?: return@withContext DownloadResult.Error("Empty response body")
+            if (!ok) return@withContext DownloadResult.Error("Failed to retrieve pack file")
 
-            // Import questions from downloaded db
             val questions = readQuestionsFromDb(tmpFile)
             if (questions.isEmpty()) return@withContext DownloadResult.Error("Pack contains no questions")
             questionDao.insertAll(questions)
 
-            // Record as installed
             progressDao.upsertInstalledPack(
                 InstalledPackEntity(
                     packKey = pack.packKey,
@@ -67,6 +59,27 @@ class PackDownloadRepository @Inject constructor(
             DownloadResult.Error(e.message ?: "Unknown error")
         } finally {
             tmpFile.delete()
+        }
+    }
+
+    private fun downloadFromDrive(fileId: String, dest: File): Boolean {
+        val url = "https://drive.google.com/uc?export=download&id=$fileId"
+        val response = okHttpClient.newCall(Request.Builder().url(url).build()).execute()
+        if (!response.isSuccessful) return false
+        response.body?.byteStream()?.use { input ->
+            dest.outputStream().use { output -> input.copyTo(output) }
+        } ?: return false
+        return true
+    }
+
+    private fun copyFromAssets(fileName: String, dest: File): Boolean {
+        return try {
+            context.assets.open("packs/$fileName").use { input ->
+                dest.outputStream().use { output -> input.copyTo(output) }
+            }
+            true
+        } catch (e: Exception) {
+            false
         }
     }
 
