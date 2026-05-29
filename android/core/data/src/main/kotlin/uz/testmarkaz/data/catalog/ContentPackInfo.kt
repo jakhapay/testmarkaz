@@ -7,10 +7,14 @@ data class ContentPackInfo(
     val gradeMin: Int?,
     val gradeMax: Int?,
     val nameUz: String,
+    val nameRu: String,
+    val description: String,
     val questionCount: Int,
     val driveFileId: String,
     val driveFileName: String,
     val driveFileSize: Long,
     val isPublished: Boolean,
-    val version: Int
+    val version: Int,
+    val sourceBook: String,
+    val lang: String
 )

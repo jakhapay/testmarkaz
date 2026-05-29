@@ -23,9 +23,9 @@ class CatalogRepository @Inject constructor(
     private fun readPacks(db: SQLiteDatabase): List<ContentPackInfo> {
         val result = mutableListOf<ContentPackInfo>()
         db.rawQuery(
-            "SELECT packKey,subjectCode,grade,gradeMin,gradeMax,nameUz,questionCount," +
-                    "driveFileId,driveFileName,driveFileSize,isPublished,version FROM content_packs" +
-                    " ORDER BY subjectCode, grade",
+            "SELECT packKey,subjectCode,grade,gradeMin,gradeMax,nameUz,nameRu,description," +
+                    "questionCount,driveFileId,driveFileName,driveFileSize,isPublished,version," +
+                    "sourceBook,lang FROM content_packs ORDER BY subjectCode, grade",
             null
         ).use { cursor ->
             while (cursor.moveToNext()) {
@@ -36,12 +36,16 @@ class CatalogRepository @Inject constructor(
                     gradeMin = cursor.getInt(3).takeIf { !cursor.isNull(3) },
                     gradeMax = cursor.getInt(4).takeIf { !cursor.isNull(4) },
                     nameUz = cursor.getString(5),
-                    questionCount = cursor.getInt(6),
-                    driveFileId = cursor.getString(7) ?: "",
-                    driveFileName = cursor.getString(8) ?: "",
-                    driveFileSize = cursor.getLong(9),
-                    isPublished = cursor.getInt(10) == 1,
-                    version = cursor.getInt(11)
+                    nameRu = cursor.getString(6) ?: "",
+                    description = cursor.getString(7) ?: "",
+                    questionCount = cursor.getInt(8),
+                    driveFileId = cursor.getString(9) ?: "",
+                    driveFileName = cursor.getString(10) ?: "",
+                    driveFileSize = cursor.getLong(11),
+                    isPublished = cursor.getInt(12) == 1,
+                    version = cursor.getInt(13),
+                    sourceBook = cursor.getString(14) ?: "",
+                    lang = cursor.getString(15) ?: "uz-Latn"
                 )
             }
         }
