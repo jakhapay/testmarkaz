@@ -9,6 +9,7 @@ import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import okhttp3.OkHttpClient
 import uz.testmarkaz.data.db.AppDatabase
+import uz.testmarkaz.data.db.dao.PausedSessionDao
 import uz.testmarkaz.data.db.dao.ProgressDao
 import uz.testmarkaz.data.db.dao.QuestionDao
 import uz.testmarkaz.data.db.dao.TestSessionDao
@@ -38,6 +39,9 @@ object AppModule {
 
     @Provides
     fun provideProgressDao(db: AppDatabase): ProgressDao = db.progressDao()
+
+    @Provides
+    fun providePausedSessionDao(db: AppDatabase): PausedSessionDao = db.pausedSessionDao()
 
     @Provides
     @Singleton

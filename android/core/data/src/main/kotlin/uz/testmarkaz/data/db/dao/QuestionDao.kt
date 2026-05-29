@@ -87,4 +87,7 @@ interface QuestionDao {
 
     @Query("SELECT COUNT(*) FROM questions WHERE subject = :subject AND grade = :grade")
     suspend fun countBySubjectGrade(subject: String, grade: Int): Int
+
+    @Query("SELECT * FROM questions WHERE id IN (:ids)")
+    suspend fun getByIds(ids: List<Long>): List<QuestionEntity>
 }
