@@ -4,59 +4,93 @@
 
 ---
 
-## About the Project
+## About
 
-TestMarkaz works without an internet connection. Questions are downloaded to the device and the app runs fully offline. Each test consists of exactly **25 questions**.
+TestMarkaz lets students practice test questions fully offline. Question packs are bundled inside the app and can also be updated via Google Drive. Each test consists of exactly **25 questions**.
 
-## Key Features
+## Features
 
-- 📶 **Offline-first** — works fully without internet
-- 📝 **25 questions** — always exactly this number per test
-- 🎯 **4 test modes** — by subject, grade range, random grade, fully random
-- 🏫 **16 subjects** — all school subjects (grades 1–11)
-- 🏆 **DTM preparation** — grade 9–11 packages
-- 📊 **Progress tracking** — XP, streaks, weak topic detection
+- 📶 **Offline-first** — all 30 question packs are bundled in the APK; no internet needed
+- 📝 **25 questions per test** — consistent exam-style format
+- 🎯 **4 test modes** — by subject, by grade range, random grade, fully random
+- 🏫 **10 subjects** — Mathematics, Physics, Chemistry, Biology, History, Geography, Informatics, Uzbek Literature, Uzbek Language, English (grades 9–11)
+- ⏸️ **Pause & resume** — exit mid-test and continue later; multiple paused tests supported
+- 📊 **Progress tracking** — XP, streaks, per-session scores
+- ☁️ **Pack updates** — download newer question packs from Google Drive when available
 
-## Tech Stack
+## Screenshots
 
-- **Kotlin** + Jetpack Compose + Material 3
-- **Room 2.6.1** (offline SQLite)
-- **Hilt** (dependency injection)
-- **Navigation Compose**
-- **Coroutines + Flow**
+> Coming soon
+
+## Getting Started
+
+### Prerequisites
+- Android Studio Hedgehog or newer
+- JDK 17+
+- Android device or emulator (API 26+)
+
+### Run
+
+```bash
+git clone https://github.com/jakhapay/testmarkaz.git
+cd testmarkaz/android
+./gradlew assembleDebug
+# or open the android/ folder in Android Studio and press Run
+```
+
+No extra setup needed — question packs are bundled in `app/src/main/assets/`.
 
 ## Project Structure
 
 ```
-TestMarkaz/
-├── android/          # Native Kotlin Android app
-│   └── app/src/main/kotlin/uz/testmarkaz/
-│       ├── data/     # Room DB, entities, DAOs, MockDataSeeder
-│       ├── domain/   # Models, UseCases
-│       ├── di/       # Hilt modules
-│       └── ui/       # Compose screens + ViewModels
-└── docs/             # Architecture, API, UI/UX, roadmap docs
+testmarkaz/
+├── android/
+│   ├── app/                  # Entry point, navigation, Hilt app component
+│   │   └── src/main/assets/
+│   │       ├── catalog.db    # Pack metadata (subject, grade, description)
+│   │       └── packs/*.db    # 30 SQLite question pack files
+│   ├── core/
+│   │   ├── data/             # Room DB, DAOs, entities, repositories, DI modules
+│   │   ├── domain/           # Domain models (TestSession, TestConfig, Subject…)
+│   │   └── ui/               # Shared theme, colors, typography
+│   └── feature/
+│       ├── home/             # Home screen with stats and resume banners
+│       ├── test/             # Test config, test session, results
+│       ├── downloads/        # Browse and download question packs
+│       ├── progress/         # Test history and scores
+│       └── profile/          # User profile
+└── docs/                     # Architecture, UI/UX, roadmap docs
 ```
 
-## Getting Started
+## Tech Stack
 
-1. Open the `android/` folder in Android Studio
-2. Run `./gradlew assembleDebug` or press the Run button in the IDE
-3. On first launch, **150+ mock questions** are seeded automatically
+| Layer | Library |
+|---|---|
+| Language | Kotlin |
+| UI | Jetpack Compose + Material 3 |
+| DI | Hilt 2.51.1 |
+| Database | Room 2.6.1 |
+| Navigation | Navigation Compose 2.7.7 |
+| Async | Coroutines + Flow |
+| Network | OkHttp 4.12.0 |
 
-## Mock Data
+## Question Packs
 
-Currently, 150+ Uzbek-language questions are seeded via `MockDataSeeder.kt`:
-- Mathematics (grades 9, 10, 11)
-- Physics, Chemistry, Biology (grade 9)
-- English, Uzbek Language, History, Geography (grade 9)
+Packs are plain SQLite files. The schema:
 
-Once real question books are available, `MockDataSeeder.kt` will be replaced with actual content.
+```sql
+CREATE TABLE questions (
+  id INTEGER PRIMARY KEY,
+  subject TEXT, grade INTEGER, topic TEXT,
+  question_text TEXT,
+  option_a TEXT, option_b TEXT, option_c TEXT, option_d TEXT,
+  correct TEXT,  -- "A" | "B" | "C" | "D"
+  explanation TEXT, difficulty INTEGER
+);
+```
 
-## Documentation
-
-All architecture, API, UI/UX, and roadmap docs are available in the `docs/` folder.
+To add or update a pack, replace the `.db` file in `assets/packs/` or set its `driveFileId` in `catalog.db`.
 
 ---
 
-*TestMarkaz MVP v1.0 — 2024*
+*TestMarkaz — 2025*
