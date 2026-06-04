@@ -34,6 +34,7 @@ fun HomeScreen(
     onOpenDownloads: () -> Unit,
     onOpenProgress: () -> Unit,
     onOpenProfile: () -> Unit,
+    onOpenPdfImport: () -> Unit = {},
     viewModel: HomeViewModel = hiltViewModel()
 ) {
     val state by viewModel.uiState.collectAsState()
@@ -93,6 +94,25 @@ fun HomeScreen(
                     Spacer(Modifier.width(8.dp))
                     Text(
                         text = "Test boshlash",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+
+            // ── Generate test from PDF ─────────────────────────────────
+            item {
+                OutlinedButton(
+                    onClick = onOpenPdfImport,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(52.dp),
+                    shape = RoundedCornerShape(16.dp)
+                ) {
+                    Icon(Icons.Default.UploadFile, contentDescription = null)
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "PDF dan test yaratish",
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold
                     )
