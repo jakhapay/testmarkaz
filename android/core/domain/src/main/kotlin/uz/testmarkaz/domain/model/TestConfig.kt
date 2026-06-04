@@ -4,14 +4,16 @@ enum class TestMode {
     SUBJECT,        // Single subject, single grade
     RANGE,          // Single subject, grade range (e.g. 7–9)
     RANDOM_CLASS,   // All subjects for one grade
-    FULL_RANDOM     // Fully random from everything downloaded
+    FULL_RANDOM,    // Fully random from everything downloaded
+    PDF_PACK        // Questions generated from a user-uploaded PDF
 }
 
 data class TestConfig(
     val mode: TestMode,
-    val subject: Subject? = null,       // null for RANDOM_CLASS / FULL_RANDOM
+    val subject: Subject? = null,       // null for RANDOM_CLASS / FULL_RANDOM / PDF_PACK
     val gradeMin: Int,
-    val gradeMax: Int
+    val gradeMax: Int,
+    val packKey: String? = null         // set only for PDF_PACK
 ) {
     val isSingleGrade: Boolean get() = gradeMin == gradeMax
 
@@ -42,6 +44,14 @@ data class TestConfig(
             subject = null,
             gradeMin = 1,
             gradeMax = 11
+        )
+
+        fun pdfPack(packKey: String) = TestConfig(
+            mode = TestMode.PDF_PACK,
+            subject = null,
+            gradeMin = 0,
+            gradeMax = 0,
+            packKey = packKey
         )
     }
 }

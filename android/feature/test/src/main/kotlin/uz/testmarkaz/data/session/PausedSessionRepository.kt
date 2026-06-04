@@ -45,8 +45,12 @@ class PausedSessionRepository @Inject constructor(
         )
     }
 
-    suspend fun restore(): RestoredSession? {
-        val entity = dao.getLatest() ?: return null
+    suspend fun restore(): RestoredSession? = restoreEntity(dao.getLatest())
+
+    suspend fun restoreById(sessionId: String): RestoredSession? = restoreEntity(dao.getById(sessionId))
+
+    private suspend fun restoreEntity(entity: PausedSessionEntity?): RestoredSession? {
+        if (entity == null) return null
         val ids = entity.questionIds.split(",").mapNotNull { it.toLongOrNull() }
         if (ids.isEmpty()) return null
 
@@ -88,7 +92,7 @@ class PausedSessionRepository @Inject constructor(
             ),
             currentIndex = entity.currentIndex
         )
-    }
+    }  // end restoreEntity
 
     suspend fun clear(sessionId: String) = dao.delete(sessionId)
 }

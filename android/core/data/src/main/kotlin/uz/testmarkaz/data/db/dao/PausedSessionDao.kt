@@ -15,6 +15,12 @@ interface PausedSessionDao {
     @Query("SELECT * FROM paused_sessions ORDER BY savedAt DESC LIMIT 1")
     suspend fun getLatest(): PausedSessionEntity?
 
+    @Query("SELECT * FROM paused_sessions WHERE sessionId = :sessionId")
+    suspend fun getById(sessionId: String): PausedSessionEntity?
+
+    @Query("SELECT * FROM paused_sessions ORDER BY savedAt DESC")
+    fun observeAll(): Flow<List<PausedSessionEntity>>
+
     @Query("SELECT COUNT(*) > 0 FROM paused_sessions")
     fun observeHasPaused(): Flow<Boolean>
 

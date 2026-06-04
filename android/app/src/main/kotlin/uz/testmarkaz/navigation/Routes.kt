@@ -8,6 +8,7 @@ object Routes {
     const val DOWNLOADS    = "downloads"
     const val PROGRESS     = "progress"
     const val PROFILE      = "profile"
+    const val PDF_IMPORT   = "pdf_import"
 
     fun testSession(sessionId: String) = "test_session/$sessionId"
     fun results(sessionId: String)     = "results/$sessionId"

@@ -27,6 +27,7 @@ dependencies {
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.activity.compose)   // SAF file picker (PDF import)
     implementation(libs.kotlinx.coroutines.android)
 
     implementation(libs.hilt.android)

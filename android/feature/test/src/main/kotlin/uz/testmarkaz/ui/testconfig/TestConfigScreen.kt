@@ -93,6 +93,7 @@ fun TestConfigScreen(
                     )
                 }
                 TestMode.FULL_RANDOM -> Unit
+                TestMode.PDF_PACK -> Unit
             }
 
             // ── Error ──────────────────────────────────────────────────

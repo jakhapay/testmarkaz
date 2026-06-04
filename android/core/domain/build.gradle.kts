@@ -24,7 +24,18 @@ dependencies {
 
     implementation(libs.kotlinx.coroutines.android)
 
+    // PDF text extraction for on-device test generation (domain/pdf)
+    implementation(libs.pdfbox.android)
+
+    // On-device LLM generation (optional — enable when shipping a Gemma/Qwen model).
+    // See domain/pdf/LlmQuestionGenerator.kt. Until then the template generator runs.
+    // implementation("com.google.mediapipe:tasks-genai:0.10.14")
+
     // Hilt for use-case injection
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
+
+    // Testing (PDF pipeline unit tests)
+    testImplementation(libs.junit)
+    testImplementation(libs.coroutines.test)
 }

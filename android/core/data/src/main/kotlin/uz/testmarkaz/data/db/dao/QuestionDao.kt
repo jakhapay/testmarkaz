@@ -54,6 +54,10 @@ interface QuestionDao {
         difficulty: Int, limit: Int
     ): List<QuestionEntity>
 
+    /** User-generated PDF pack — random questions from one pack. */
+    @Query("SELECT * FROM questions WHERE packKey = :packKey ORDER BY RANDOM() LIMIT :limit")
+    suspend fun randomByPackKey(packKey: String, limit: Int): List<QuestionEntity>
+
     // ── Pool size checks ──────────────────────────────────────────────────
 
     @Query("""
@@ -61,6 +65,13 @@ interface QuestionDao {
         WHERE subject = :subject AND grade BETWEEN :gradeMin AND :gradeMax
     """)
     suspend fun countBySubjectRange(subject: String, gradeMin: Int, gradeMax: Int): Int
+
+    @Query("SELECT COUNT(*) FROM questions WHERE packKey = :packKey")
+    suspend fun countByPackKey(packKey: String): Int
+
+    /** Remove a user-generated PDF pack's questions. */
+    @Query("DELETE FROM questions WHERE packKey = :packKey")
+    suspend fun deleteByPackKey(packKey: String)
 
     @Query("SELECT COUNT(*) FROM questions WHERE grade = :grade")
     suspend fun countByGrade(grade: Int): Int

@@ -30,7 +30,10 @@ class GenerateTestUseCase @Inject constructor(
      */
     suspend fun invoke(config: TestConfig): TestSession? {
         val questions = fetchQuestions(config)
-        if (questions.size < TEST_SIZE) return null
+        // Curated packs require a full 25-question pool; user-generated PDF packs
+        // may be shorter, so allow any non-empty pack to start a (shorter) test.
+        val minSize = if (config.mode == TestMode.PDF_PACK) 1 else TEST_SIZE
+        if (questions.size < minSize) return null
 
         return TestSession(
             sessionId = UUID.randomUUID().toString(),
@@ -69,6 +72,11 @@ class GenerateTestUseCase @Inject constructor(
 
             TestMode.FULL_RANDOM -> {
                 questionDao.randomAll().map { it.toDomain() }
+            }
+
+            TestMode.PDF_PACK -> {
+                val key = config.packKey ?: return emptyList()
+                questionDao.randomByPackKey(key, TEST_SIZE).map { it.toDomain() }
             }
         }
     }

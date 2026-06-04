@@ -54,6 +54,7 @@ class TestConfigViewModel @Inject constructor(
             TestMode.RANGE        -> TestConfig.subjectRange(s.selectedSubject, s.gradeMin, s.gradeMax)
             TestMode.RANDOM_CLASS -> TestConfig.randomClass(s.selectedGrade)
             TestMode.FULL_RANDOM  -> TestConfig.fullRandom()
+            TestMode.PDF_PACK     -> return   // PDF tests start from PdfImportScreen, not here
         }
 
         viewModelScope.launch {

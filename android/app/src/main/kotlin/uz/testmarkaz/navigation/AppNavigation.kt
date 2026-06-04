@@ -10,6 +10,7 @@ import kotlinx.coroutines.launch
 import uz.testmarkaz.data.session.PausedSessionRepository
 import uz.testmarkaz.ui.downloads.DownloadsScreen
 import uz.testmarkaz.ui.home.HomeScreen
+import uz.testmarkaz.ui.pdfimport.PdfImportScreen
 import uz.testmarkaz.ui.profile.ProfileScreen
 import uz.testmarkaz.ui.progress.ProgressScreen
 import uz.testmarkaz.ui.results.ResultsScreen
@@ -40,7 +41,19 @@ fun AppNavigation(
                 },
                 onOpenDownloads = { navController.navigate(Routes.DOWNLOADS) },
                 onOpenProgress  = { navController.navigate(Routes.PROGRESS) },
-                onOpenProfile   = { navController.navigate(Routes.PROFILE) }
+                onOpenProfile   = { navController.navigate(Routes.PROFILE) },
+                onOpenPdfImport = { navController.navigate(Routes.PDF_IMPORT) }
+            )
+        }
+
+        composable(Routes.PDF_IMPORT) {
+            PdfImportScreen(
+                onBack = { navController.popBackStack() },
+                onSessionReady = { sessionId ->
+                    navController.navigate(Routes.testSession(sessionId)) {
+                        popUpTo(Routes.PDF_IMPORT) { inclusive = true }
+                    }
+                }
             )
         }
 
